@@ -7,6 +7,7 @@ const SearchBar = () => {
     const [suggestions, setSuggestions] = useState([]);
     // Ref per gestire il debounce (ritardo nella chiamata API)
     const debounceRef = useRef(null);
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     // Effetto che si attiva ogni volta che l'utente digita qualcosa
     useEffect(() => {
@@ -45,6 +46,19 @@ const SearchBar = () => {
         // Dipendenza: ogni volta che cambia la query
     }, [query]);
 
+    const handleSelectProduct = (id) => {
+        fetch(`https://boolean-spec-frontend.vercel.app/freetestapi/products/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                setSelectedProduct(data); // Mostra i dettagli
+                setSuggestions([]);       // Nasconde i suggerimenti
+                setQuery('');             // Svuota il campo di ricerca 
+            })
+            .catch(err => {
+                console.error('Errore nel caricamento del prodotto:', err);
+            });
+    };
+
     return (
         <div style={{ position: 'relative', width: '300px' }}>
             {/* Campo input dove l'utente digita la ricerca */}
@@ -76,6 +90,7 @@ const SearchBar = () => {
                     {suggestions.map(item => (
                         <li
                             key={item.id}
+                            onClick={() => handleSelectProduct(item.id)}
                             style={{
                                 padding: '8px',
                                 borderBottom: '1px solid #eee',
@@ -86,6 +101,24 @@ const SearchBar = () => {
                         </li>
                     ))}
                 </ul>
+            )}
+            {selectedProduct && (
+                <div style={{
+                    marginTop: '20px',
+                    padding: '10px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    backgroundColor: '#f9f9f9'
+                }}>
+                    <h3>{selectedProduct.name}</h3>
+                    <img
+                        src={selectedProduct.image}
+                        alt={selectedProduct.name}
+                        style={{ maxWidth: '100%', marginBottom: '10px' }}
+                    />
+                    <p>{selectedProduct.description}</p>
+                    <strong>Prezzo: {selectedProduct.price} €</strong>
+                </div>
             )}
         </div>
     );
